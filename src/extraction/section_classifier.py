@@ -10,7 +10,7 @@ import re
 
 SECTION_PATTERNS = {
     "objectives": re.compile(r"(?i)\bobjectives?\b"),
-    "eligibility_criteria": re.compile(r"(?i)\beligibility criteria\b|\binclusion|exclusion criteria\b"),
+    "eligibility_criteria": re.compile(r"(?i)\beligibility criteria\b|\binclusion criteria\b|\bexclusion criteria\b"),
     "endpoints": re.compile(r"(?i)\b(primary|secondary) endpoints?\b"),
     "study_design": re.compile(r"(?i)\bstudy design\b"),
 }
