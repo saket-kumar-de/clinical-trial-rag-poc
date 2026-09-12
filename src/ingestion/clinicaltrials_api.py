@@ -38,3 +38,18 @@ def fetch_trials(condition: str, max_results: int = 30) -> list[dict]:
             break
 
     return studies[:max_results]
+
+
+def fetch_trial_by_id(nct_id: str) -> dict:
+    """
+    Fetch one specific trial by its exact NCT ID, via the API's
+    dedicated single-study detail endpoint -- a path parameter
+    (.../studies/NCT03961204), not the query.cond search fetch_trials
+    uses. Returns the study object directly (protocolSection etc. at
+    the top level), the same shape as one entry from fetch_trials'
+    "studies" list, so trial_from_ctgov_record() and the rest of
+    entity_extractor.py work on it unchanged.
+    """
+    response = requests.get(f"{BASE_URL}/{nct_id}", timeout=30)
+    response.raise_for_status()
+    return response.json()

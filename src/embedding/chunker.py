@@ -23,10 +23,13 @@ from src.extraction.section_classifier import classify_section
 _MAX_CHUNK_CHARS = 800
 
 # A chunk shorter than this carries essentially no embeddable content
-# -- confirmed on real data: a genuine chunk was a 3-character section
-# number ("4.1") left over when two headings sat very close together
-# with almost nothing between them. The shortest legitimate real chunk
-# seen so far is ~80 characters, so this threshold has real margin.
+# -- confirmed on real PDF data: a genuine "chunk" was a 3-character
+# section number ("4.1") left over when two headings sat very close
+# together. Calibrated for PDF extraction noise specifically -- clean,
+# already-correctly-scoped structured data (a ClinicalTrials.gov
+# endpoint description, a PubMed abstract) can legitimately be shorter
+# than this and still be real content, not noise. See chunk_text's
+# min_length parameter.
 _MIN_CHUNK_CHARS = 30
 
 # Splits after '.', '!', or '?' followed by whitespace. A simple
@@ -45,7 +48,7 @@ class TextChunk:
     text: str
 
 
-def chunk_text(nct_id: str, source_doc: str, section_type: str, text: str) -> list[TextChunk]:
+def chunk_text(nct_id: str, source_doc: str, section_type: str, text: str, min_length: int = _MIN_CHUNK_CHARS) -> list[TextChunk]:
     """
     Split `text` to size (via _split_long_text) and wrap each surviving
     piece into a TextChunk. For content that's already correctly
@@ -57,10 +60,19 @@ def chunk_text(nct_id: str, source_doc: str, section_type: str, text: str) -> li
     section's body text; the ClinicalTrials.gov/PubMed ingestion path
     (run_ingestion.py) calls it directly, since that text arrives
     pre-scoped to its section already.
+
+    `min_length` defaults to _MIN_CHUNK_CHARS, tuned for PDF noise
+    (see that constant's comment). Confirmed on real data this default
+    is wrong for clean structured fields: real ClinicalTrials.gov
+    endpoint descriptions like "Overall survival" (16 chars) or
+    "Progression-free survival" (25 chars) are completely legitimate
+    and shorter than 30 -- callers with already-clean, pre-scoped text
+    should pass a much smaller min_length (e.g. 1, to still drop a
+    genuinely empty string) rather than accept the PDF-tuned default.
     """
     chunks: list[TextChunk] = []
     for piece in _split_long_text(text):
-        if len(piece) >= _MIN_CHUNK_CHARS:
+        if len(piece) >= min_length:
             chunks.append(TextChunk(nct_id=nct_id, source_doc=source_doc, section_type=section_type, text=piece))
     return chunks
 
