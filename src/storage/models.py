@@ -2,7 +2,7 @@
 Lightweight dataclasses mirroring the Aurora schema.
 Used for type hints as records move through extraction -> storage.
 """
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Optional
 
 
@@ -36,12 +36,3 @@ class EligibilityCriterion:
     nct_id: str
     criterion_type: str  # "inclusion" | "exclusion"
     description: str
-
-
-@dataclass
-class Chunk:
-    nct_id: str
-    source_doc: str
-    section_type: str
-    chunk_text: str
-    embedding: Optional[list] = field(default=None)
